@@ -94,6 +94,7 @@ const shareBtn = document.getElementById('shareBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const toastEl = document.getElementById('toast');
 const cheerEl = document.getElementById('cheer');
+const cheerAboveEl = document.getElementById('cheerAbove');
 
 // 개별 이미지 로더
 const images = { idle1: null, idle2: null, walk1: null, walk2: null, jump: null, hit: null, heal: null, mentalout: null };
@@ -242,7 +243,8 @@ const state = {
     nearDanger: false,
     survival: 0,
     cam: { shakeX: 0, shakeY: 0, timer: 0 },
-    flash: 0 // 0~1 붉은 플래시
+    flash: 0, // 0~1 붉은 플래시
+    milestone: 0 // 0,1,2,3 (100/200/300)
 };
 
 function resetGame() {
@@ -573,6 +575,12 @@ function showCheer() {
     cheerEl.classList.add('show');
     setTimeout(() => cheerEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
 }
+function showCheerAbove(text) {
+    if (!cheerAboveEl) return;
+    cheerAboveEl.textContent = text;
+    cheerAboveEl.classList.add('show');
+    setTimeout(() => cheerAboveEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
+}
 
 // 메인 루프
 function frame(ts) {
@@ -677,6 +685,12 @@ function update(dt) {
             spawnSpark(c.x, c.y);
             uiBump(scoreEl); uiBump(document.querySelector('.battery'));
             updateHUD();
+            // 점수 마일스톤 응원(100/200/300)
+            const m = Math.floor(state.score / 100);
+            if (m > state.milestone && m >= 1 && m <= 3) {
+                state.milestone = m;
+                showCheerAbove(pick(CHEERS));
+            }
             if (state.coins % 10 === 0) showCheer();
         }
     }

@@ -21,6 +21,7 @@ body {
     user-select: none;
     -webkit-touch-callout: none; /* iOS 복사/공유 메뉴 방지 */
 }
+html, body { overflow-x: hidden; }
 
 /* iOS Safari: 길게 눌러도 선택/호출 메뉴 방지(광범위 적용) */
 html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
@@ -68,6 +69,7 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
     place-items: center;
     width: 100%;
 }
+.playfield { position: relative; display: grid; place-items: center; width: 100%; }
 .canvas-wrap {
     position: relative;
     width: min(800px, 95vw);
@@ -83,9 +85,12 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
     justify-self: center;
 }
 
-.canvas-hud { position: absolute; left: 10px; top: 10px; z-index: 6; }
-.canvas-hud .battery-text { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.canvas-hud { position: absolute; left: 0; right: 0; top: 6px; padding: 0 8px; z-index: 6; }
+.canvas-hud .hud-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.canvas-hud .battery-text { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 .canvas-hud .battery-outline, .canvas-hud .battery-nub { stroke: #e0f2ff; fill: #e0f2ff; opacity: .95; }
+.score-chip { background: rgba(0,0,0,0.35); color: #fff; padding: 4px 8px; border-radius: 10px; font-weight: 800; }
+.battery { background: rgba(0,0,0,0.30); padding: 2px 6px; border-radius: 10px; }
 .canvas-wrap.danger {
     animation: dangerPulse 0.5s steps(2, end) infinite;
 }
@@ -110,6 +115,8 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
     transition: opacity 220ms ease, transform 220ms ease;
 }
 .cheer.show { opacity: 1; transform: translate(-50%, 4px); }
+.cheer.above { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: rgba(30,41,59,0.85); color: #fff; padding: 8px 12px; border-radius: 10px; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity 220ms ease, transform 220ms ease; z-index: 7; }
+.cheer.above.show { opacity: 1; transform: translate(-50%, -4px); }
 
 .bottombar { gap: 10px; }
 .controls-left, .controls-right { display: flex; gap: 8px; align-items: center; }

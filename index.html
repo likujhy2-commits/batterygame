@@ -12,26 +12,30 @@
     <div class="app" id="app">
         <header class="topbar">
             <div class="hud-left"></div>
-            <div class="hud-right">
-                <div class="score">점수: <span id="score">0</span></div>
-    </div>
+            <div class="hud-right"></div>
         </header>
 
         <main class="stage" id="stage">
-            <div class="canvas-wrap danger-frame-off" id="canvasWrap">
-                <div class="canvas-hud">
-                    <div class="battery" aria-label="멘탈 게이지">
-                        <svg class="battery-icon" viewBox="0 0 54 24" aria-hidden="true">
-                            <rect x="1" y="1" width="48" height="22" rx="3" ry="3" class="battery-outline"/>
-                            <rect x="50" y="7" width="3" height="10" rx="1" class="battery-nub"/>
-                            <rect x="3" y="3" width="44" height="18" rx="2" class="battery-fill-bg"/>
-                            <rect x="3" y="3" width="0" height="18" rx="2" class="battery-fill" id="batteryFill"/>
-                        </svg>
-                        <span class="battery-text"><span id="mentalPercent">100</span>%</span>
-                    </div>
-                </div>
-                <canvas id="gameCanvas" width="800" height="500"></canvas>
-                <div class="cheer" id="cheer" aria-live="polite"></div>
+            <div class="playfield" id="playfield">
+                <div class="cheer above" id="cheerAbove" aria-live="polite"></div>
+                <div class="canvas-wrap danger-frame-off" id="canvasWrap">
+                    <div class="canvas-hud">
+                        <div class="hud-row">
+                            <div class="battery" aria-label="멘탈 게이지">
+                                <svg class="battery-icon" viewBox="0 0 54 24" aria-hidden="true">
+                                    <rect x="1" y="1" width="48" height="22" rx="3" ry="3" class="battery-outline"/>
+                                    <rect x="50" y="7" width="3" height="10" rx="1" class="battery-nub"/>
+                                    <rect x="3" y="3" width="44" height="18" rx="2" class="battery-fill-bg"/>
+                                    <rect x="3" y="3" width="0" height="18" rx="2" class="battery-fill" id="batteryFill"/>
+                                </svg>
+                                <span class="battery-text"><span id="mentalPercent">100</span>%</span>
+                            </div>
+                            <div class="score score-chip">⭐ 드림 포인트: <span id="score">0</span></div>
+            </div>
+        </div>
+                    <canvas id="gameCanvas" width="800" height="500"></canvas>
+                    <div class="cheer" id="cheer" aria-live="polite"></div>
+            </div>
         </div>
     </main>
 
