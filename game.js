@@ -55,7 +55,8 @@ const CONFIG = {
         POINTER_TOLERANCE: 24,
         GESTURE_ENABLED: false,
         DEBUG_INPUT: false
-    }
+    },
+    TIMESTEP: { FIXED_DT: 1/60, MAX_STEPS: 5 }
 };
 
 // 유틸
@@ -121,6 +122,18 @@ const btnLeft = document.getElementById('btnLeft');
 const btnRight = document.getElementById('btnRight');
 const btnJump = document.getElementById('btnJump');
 let debugEl = null;
+
+// DPR 스케일 & 리사이즈
+function resizeCanvas() {
+    const dpr = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
+    const W = CONFIG.CANVAS.WIDTH;
+    const H = CONFIG.CANVAS.HEIGHT;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 // 오디오 매니저 (간단 WebAudio 톤)
 class AudioManager {
@@ -192,6 +205,7 @@ const state = {
     paused: false,
     time: 0,
     lastTs: 0,
+    accumulator: 0,
     dt: 0,
     score: 0,
     coins: 0,
@@ -209,7 +223,9 @@ const state = {
         elapsed: 0
     },
     nearDanger: false,
-    survival: 0
+    survival: 0,
+    cam: { shakeX: 0, shakeY: 0, timer: 0 },
+    flash: 0 // 0~1 붉은 플래시
 };
 
 function resetGame() {
@@ -217,6 +233,7 @@ function resetGame() {
     state.paused = false;
     state.time = 0;
     state.lastTs = 0;
+    state.accumulator = 0;
     state.dt = 0;
     state.score = 0;
     state.coins = 0;
@@ -243,6 +260,8 @@ function resetGame() {
     state.spawn = { bombGround: 0, bombAir: 0, coin: 0, item: 0, elapsed: 0 };
     state.nearDanger = false;
     state.survival = 0;
+    state.cam = { shakeX: 0, shakeY: 0, timer: 0 };
+    state.flash = 0;
     updateHUD();
     canvasWrap.classList.remove('danger');
 }
@@ -391,6 +410,7 @@ function triggerJump() {
         p.jumpCount += 1;
         state.allowJump = false;
         audio.beep('jump');
+        state.cam.timer = Math.min(1, state.cam.timer + 0.2);
     }
 }
 
@@ -437,6 +457,8 @@ function startGame() {
     state.lastTs = performance.now();
     // 배경음악 시작 (낮은 볼륨)
     audio.playBgm();
+    // 2초 튜토 팁
+    showToast('← → 이동, ⤒ 점프 (두 번 탭 이단점프)', 2000);
     requestAnimationFrame(frame);
 }
 function togglePause(force) {
@@ -505,10 +527,10 @@ function circleRectOverlap(cx, cy, cr, rx, ry, rw, rh) {
 }
 
 // UI 표시
-function showToast(text) {
+function showToast(text, ms = CONFIG.UI.TOAST_MS) {
     toastEl.textContent = text;
     toastEl.classList.add('show');
-    setTimeout(() => toastEl.classList.remove('show'), CONFIG.UI.TOAST_MS);
+    setTimeout(() => toastEl.classList.remove('show'), ms);
 }
 const CHEERS = [
     '꾸준함이 곧 실력! 계속 가보자.',
@@ -526,12 +548,26 @@ function showCheer() {
 function frame(ts) {
     if (!state.running) return;
     if (state.paused) { state.lastTs = ts; requestAnimationFrame(frame); return; }
-    state.dt = Math.min(0.033, (ts - state.lastTs) / 1000);
+    const FIXED = CONFIG.TIMESTEP.FIXED_DT;
+    const MAX_STEPS = CONFIG.TIMESTEP.MAX_STEPS;
+    const delta = Math.min(0.05, (ts - state.lastTs) / 1000);
     state.lastTs = ts;
-    state.time += state.dt;
-    state.spawn.elapsed += state.dt;
-    state.survival += state.dt;
-    update(state.dt);
+    state.accumulator += delta;
+    let steps = 0;
+    while (state.accumulator >= FIXED && steps++ < MAX_STEPS) {
+        state.dt = FIXED;
+        state.time += state.dt;
+        state.spawn.elapsed += state.dt;
+        state.survival += state.dt;
+        update(state.dt);
+        // 카메라 흔들림/플래시 감쇠
+        if (state.cam.timer > 0) state.cam.timer -= state.dt;
+        const k = Math.max(0, state.cam.timer);
+        state.cam.shakeX = (Math.random() * 2 - 1) * 3 * k;
+        state.cam.shakeY = (Math.random() * 2 - 1) * 2 * k;
+        if (state.flash > 0) state.flash = Math.max(0, state.flash - (state.dt / 0.12));
+        state.accumulator -= FIXED;
+    }
     render();
     requestAnimationFrame(frame);
 }
@@ -555,6 +591,7 @@ function update(dt) {
     p.y += p.vy * dt;
     // 바닥 충돌
     const groundTop = CONFIG.WORLD.GROUND_Y - CONFIG.PLAYER.HEIGHT;
+    const wasOnGround = p.onGround;
     if (p.y >= groundTop) {
         p.y = groundTop; p.vy = 0; 
         if (!p.onGround) { p.jumpCount = 0; }
@@ -566,17 +603,19 @@ function update(dt) {
 
     // 스폰 타이밍
     const e = state.spawn.elapsed;
-    // 폭탄 스폰간격 감소
+    // 난이도 곡선: 0-20s 느림, 20-60s 점진, 60s+ 가속
+    const t = state.survival;
+    const curve = t < 20 ? 0.5 : (t < 60 ? lerp(0.5, 1.0, (t - 20) / 40) : lerp(1.0, 1.5, Math.min(1, (t - 60) / 60)));
     const gCfg = CONFIG.BOMBS.GROUND_SPAWN;
     const aCfg = CONFIG.BOMBS.AIR_SPAWN;
     const coinCfg = CONFIG.COIN; const itemCfg = CONFIG.ITEMS;
     if (state.spawn.bombGround <= 0) {
         spawnBomb('ground');
-        state.spawn.bombGround = Math.max(gCfg.MIN, gCfg.BASE - e * gCfg.RAMP) * lerp(0.8, 1.2, Math.random());
+        state.spawn.bombGround = Math.max(gCfg.MIN, (gCfg.BASE - e * gCfg.RAMP) / curve) * lerp(0.8, 1.2, Math.random());
     } else state.spawn.bombGround -= dt;
     if (state.spawn.bombAir <= 0) {
         spawnBomb('air');
-        state.spawn.bombAir = Math.max(aCfg.MIN, aCfg.BASE - e * aCfg.RAMP) * lerp(0.8, 1.2, Math.random());
+        state.spawn.bombAir = Math.max(aCfg.MIN, (aCfg.BASE - e * aCfg.RAMP) / curve) * lerp(0.8, 1.2, Math.random());
     } else state.spawn.bombAir -= dt;
     if (state.spawn.coin <= 0) {
         spawnCoin();
@@ -637,6 +676,7 @@ function update(dt) {
             applyMentalDamage(CONFIG.BOMBS.TOUCH_DAMAGE, false);
             p.hitTimer = 0.35; // 피격 연출
             p.state = 'hit';
+            state.flash = 1; // 붉은 플래시
             if (state.mental <= 0) { gameOver(); return; }
             continue;
         }
@@ -670,6 +710,11 @@ function update(dt) {
         if (!p.onGround) p.state = 'jump';
         else if (Math.abs(p.vx) > 1) p.state = 'walk';
         else p.state = 'idle';
+    }
+
+    // 착지 순간 연출
+    if (!wasOnGround && p.onGround) {
+        state.cam.timer = Math.min(1, state.cam.timer + 0.25);
     }
 }
 
@@ -708,6 +753,9 @@ function render() {
         grad.addColorStop(1, '#0e1733');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
     }
+    // 카메라 흔들림 적용
+    ctx.save();
+    ctx.translate(Math.round(state.cam.shakeX), Math.round(state.cam.shakeY));
     // 지면(비표시): 물리적으로만 존재, 렌더링 생략
 
     // 코인
@@ -760,6 +808,16 @@ function render() {
 
     // 플레이어 (스프라이트 or 도트풍 대체)
     drawPlayer();
+    ctx.restore();
+
+    // 붉은 플래시 오버레이
+    if (state.flash > 0) {
+        ctx.save();
+        ctx.globalAlpha = Math.min(0.45, state.flash * 0.45);
+        ctx.fillStyle = '#ff2a2a';
+        ctx.fillRect(0, 0, W, H);
+        ctx.restore();
+    }
 }
 
 function drawPlayer() {
