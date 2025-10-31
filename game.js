@@ -49,6 +49,11 @@ const CONFIG = {
         VOLUME: 0.2,
         BGM_SRC: '배경음악.mp3',
         BGM_VOLUME: 0.08
+    },
+    INPUT: {
+        POINTER_TOLERANCE: 24,
+        GESTURE_ENABLED: false,
+        DEBUG_INPUT: false
     }
 };
 
@@ -113,6 +118,7 @@ const touchControls = document.getElementById('touchControls');
 const btnLeft = document.getElementById('btnLeft');
 const btnRight = document.getElementById('btnRight');
 const btnJump = document.getElementById('btnJump');
+let debugEl = null;
 
 // 오디오 매니저 (간단 WebAudio 톤)
 class AudioManager {
@@ -226,7 +232,7 @@ function resetGame() {
         facing: 1,
         state: 'idle' // idle, walk, jump, hit, win
     };
-    state.inputs = { left: false, right: false, jump: false };
+    state.inputs = { left: false, right: false, jump: false, leftPressed: false, rightPressed: false, jumpPressed: false };
     state.allowJump = true;
     state.bombs = [];
     state.coinsList = [];
@@ -257,7 +263,7 @@ function setupInputs() {
         if (e.code === 'ArrowRight' || e.code === 'KeyD') { state.inputs.right = true; }
         if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') {
             e.preventDefault();
-            state.inputs.jump = true;
+            state.inputs.jump = true; state.inputs.jumpPressed = true;
         }
         if (e.code === 'KeyP') { togglePause(); }
         if (e.code === 'KeyM') { toggleMute(); }
@@ -272,73 +278,82 @@ function setupInputs() {
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
         appEl.classList.add('touch-enabled');
         touchControls.hidden = false;
+        if (CONFIG.INPUT.DEBUG_INPUT && !debugEl) {
+            debugEl = document.createElement('div');
+            debugEl.style.position = 'absolute';
+            debugEl.style.left = '8px';
+            debugEl.style.bottom = '8px';
+            debugEl.style.padding = '4px 6px';
+            debugEl.style.background = 'rgba(0,0,0,0.45)';
+            debugEl.style.color = '#fff';
+            debugEl.style.font = '600 12px ui-sans-serif';
+            debugEl.style.borderRadius = '8px';
+            debugEl.style.zIndex = '20';
+            canvasWrap.appendChild(debugEl);
+        }
     }
-    const bindHold = (el, on, off) => {
-        const down = (ev) => { ev.preventDefault(); on(); };
-        const up = (ev) => { ev.preventDefault(); off(); };
-        el.addEventListener('pointerdown', down);
-        el.addEventListener('pointerup', up);
-        el.addEventListener('pointercancel', up);
-        el.addEventListener('pointerleave', up);
+    // 멀티터치 대응: 버튼별 포인터 추적
+    const ptrFor = { left: null, right: null, jump: null };
+    const setActive = (btn, on) => { if (!btn) return; btn.classList.toggle('active', !!on); };
+    const within = (el, x, y, tol) => {
+        const r = el.getBoundingClientRect();
+        return x >= r.left - tol && x <= r.right + tol && y >= r.top - tol && y <= r.bottom + tol;
+    };
+    const addHandlers = (el, key) => {
+        el.addEventListener('pointerdown', (ev) => {
+            ev.preventDefault();
+            if (ptrFor[key] === null) ptrFor[key] = ev.pointerId;
+            if (key === 'left') state.inputs.left = state.inputs.leftPressed = true;
+            if (key === 'right') state.inputs.right = state.inputs.rightPressed = true;
+            if (key === 'jump') { state.inputs.jump = state.inputs.jumpPressed = true; }
+            setActive(el, true);
+            el.setPointerCapture(ev.pointerId);
+        }, { passive: false });
+        el.addEventListener('pointermove', (ev) => {
+            if (ptrFor[key] !== ev.pointerId) return;
+            const tol = CONFIG.INPUT.POINTER_TOLERANCE;
+            const inside = within(el, ev.clientX, ev.clientY, tol);
+            if (!inside) {
+                // 롤오버: 다른 버튼으로 이동 감지
+                if (key !== 'left' && within(btnLeft, ev.clientX, ev.clientY, tol)) {
+                    // 이전 끄기
+                    ptrFor[key] = null; setActive(el, false);
+                    // 새 버튼 켜기
+                    ptrFor.left = ev.pointerId; state.inputs.left = state.inputs.leftPressed = true; setActive(btnLeft, true);
+                    if (key === 'right') { state.inputs.right = state.inputs.rightPressed = false; }
+                    if (key === 'jump') { /* 유지 */ }
+                } else if (key !== 'right' && within(btnRight, ev.clientX, ev.clientY, tol)) {
+                    ptrFor[key] = null; setActive(el, false);
+                    ptrFor.right = ev.pointerId; state.inputs.right = state.inputs.rightPressed = true; setActive(btnRight, true);
+                    if (key === 'left') { state.inputs.left = state.inputs.leftPressed = false; }
+                } else if (key !== 'jump' && within(btnJump, ev.clientX, ev.clientY, tol)) {
+                    ptrFor[key] = null; setActive(el, false);
+                    ptrFor.jump = ev.pointerId; state.inputs.jump = state.inputs.jumpPressed = true; setActive(btnJump, true);
+                }
+            }
+        }, { passive: false });
+        const end = (ev) => {
+            if (ptrFor[key] !== ev.pointerId) return;
+            ptrFor[key] = null;
+            if (key === 'left') { state.inputs.left = state.inputs.leftPressed = false; }
+            if (key === 'right') { state.inputs.right = state.inputs.rightPressed = false; }
+            if (key === 'jump') { state.inputs.jump = false; state.allowJump = true; }
+            setActive(el, false);
+        };
+        el.addEventListener('pointerup', end, { passive: false });
+        el.addEventListener('pointercancel', end, { passive: false });
+        el.addEventListener('pointerleave', end, { passive: false });
     };
     if (btnLeft && btnRight && btnJump) {
-        bindHold(btnLeft, () => state.inputs.left = true, () => state.inputs.left = false);
-        bindHold(btnRight, () => state.inputs.right = true, () => state.inputs.right = false);
-        btnJump.addEventListener('pointerdown', (e) => { e.preventDefault(); triggerJump(); });
-        const resetAllow = (e) => { e.preventDefault(); state.allowJump = true; };
-        btnJump.addEventListener('pointerup', resetAllow);
-        btnJump.addEventListener('pointercancel', resetAllow);
-        btnJump.addEventListener('pointerleave', resetAllow);
+        addHandlers(btnLeft, 'left');
+        addHandlers(btnRight, 'right');
+        addHandlers(btnJump, 'jump');
     }
 
-    // 화면 제스처: 하단 영역 홀드 이동(좌/우), 스와이프 업 점프
-    const activePointers = new Map();
-    const getZone = (x, y) => {
-        const rect = canvasWrap.getBoundingClientRect();
-        const rx = (x - rect.left) / rect.width;
-        const ry = (y - rect.top) / rect.height;
-        return { rx, ry };
-    };
-    const updateDirFrom = (rx, ry, phase) => {
-        // 하단 40% 영역에서만 방향 입력 활성화
-        if (ry >= 0.60) {
-            if (rx <= 0.35) { state.inputs.left = true; state.inputs.right = false; }
-            else if (rx >= 0.65) { state.inputs.right = true; state.inputs.left = false; }
-        } else if (phase === 'end') {
-            state.inputs.left = false; state.inputs.right = false;
-        }
-    };
-    const onPD = (ev) => {
-        if (startOverlay.hidden === false || gameOverOverlay.hidden === false) return;
-        const { rx, ry } = getZone(ev.clientX, ev.clientY);
-        activePointers.set(ev.pointerId, { sx: ev.clientX, sy: ev.clientY, t: performance.now(), usedDir: false });
-        updateDirFrom(rx, ry, 'start');
-    };
-    const onPM = (ev) => {
-        const data = activePointers.get(ev.pointerId); if (!data) return;
-        const { rx, ry } = getZone(ev.clientX, ev.clientY);
-        updateDirFrom(rx, ry, 'move');
-    };
-    const onPU = (ev) => {
-        const data = activePointers.get(ev.pointerId); if (data) {
-            const dx = ev.clientX - data.sx; const dy = ev.clientY - data.sy;
-            const dt = performance.now() - data.t;
-            // 스와이프 업 판정(짧은 시간 내 위로 40px 이상)
-            if (-dy > 40 && dt < 400) triggerJump();
-            else {
-                // 하단 중앙 탭 점프(0.35~0.65)
-                const { rx, ry } = getZone(ev.clientX, ev.clientY);
-                if (ry >= 0.60 && rx > 0.35 && rx < 0.65 && dt < 250 && Math.hypot(dx, dy) < 20) triggerJump();
-            }
-        }
-        activePointers.delete(ev.pointerId);
-        state.inputs.left = false; state.inputs.right = false;
-        state.allowJump = true;
-    };
-    canvasWrap.addEventListener('pointerdown', onPD);
-    window.addEventListener('pointermove', onPM);
-    window.addEventListener('pointerup', onPU);
-    window.addEventListener('pointercancel', onPU);
+    // 이전 제스처 방식은 비활성화(원하면 CONFIG.INPUT.GESTURE_ENABLED로 토글)
+    if (CONFIG.INPUT.GESTURE_ENABLED) {
+        // 구현 생략
+    }
 
     // 모바일에서 길게 누를 때 메뉴/텍스트 선택 방지
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
@@ -521,11 +536,16 @@ function frame(ts) {
 
 function update(dt) {
     const p = state.player;
-    // 입력 적용
+    // 입력 플래그(키보드/터치 통합)
     p.vx = 0;
-    if (state.inputs.left) { p.vx = -CONFIG.PLAYER.SPEED; p.facing = -1; }
-    if (state.inputs.right) { p.vx = CONFIG.PLAYER.SPEED; p.facing = 1; }
-    if (state.inputs.jump) { triggerJump(); state.inputs.jump = false; }
+    const left = state.inputs.left || state.inputs.leftPressed;
+    const right = state.inputs.right || state.inputs.rightPressed;
+    const jumpNow = state.inputs.jump || state.inputs.jumpPressed;
+    if (left && right) {
+        // 동시 입력 규칙: 상쇄(정지) 또는 마지막 입력 우선 가능. 여기선 상쇄.
+    } else if (left) { p.vx = -CONFIG.PLAYER.SPEED; p.facing = -1; }
+    else if (right) { p.vx = CONFIG.PLAYER.SPEED; p.facing = 1; }
+    if (jumpNow) { triggerJump(); state.inputs.jumpPressed = false; }
 
     // 물리
     p.vy += CONFIG.WORLD.GRAVITY * dt;
