@@ -82,7 +82,7 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
     justify-self: center;
 }
 
-.canvas-hud { position: absolute; left: 0; right: 0; top: 6px; padding: 0 8px; z-index: 6; }
+.canvas-hud { position: absolute; left: 0; right: 0; top: 6px; padding: 0 8px; z-index: 100; -webkit-transform: translateZ(0); transform: translateZ(0); pointer-events: auto; }
 .canvas-hud .hud-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .canvas-hud .hud-left { margin-right: 0; }
 .canvas-hud .score-chip { margin: 0; }
@@ -120,6 +120,8 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 .cheer.show { opacity: 1; transform: translate(-50%, 4px); }
 .cheer.above { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); background: rgba(30,41,59,0.85); color: #fff; padding: 8px 12px; border-radius: 10px; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity 220ms ease, transform 220ms ease; z-index: 7; }
 .cheer.above.show { opacity: 1; transform: translate(-50%, -4px); }
+.cheer.center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.35); color: #fff; padding: 10px 14px; border-radius: 12px; font-weight: 800; opacity: 0; pointer-events: none; transition: opacity 220ms ease, transform 220ms ease; z-index: 90; }
+.cheer.center.show { opacity: 1; transform: translate(-50%, -46%); }
 
 .bottombar { gap: 10px; }
 .controls-left, .controls-right { display: flex; gap: 8px; align-items: center; }

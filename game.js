@@ -98,6 +98,7 @@ const shareBtn = document.getElementById('shareBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const toastEl = document.getElementById('toast');
 const cheerEl = document.getElementById('cheer');
+const cheerCenterEl = document.getElementById('cheerCenter');
 const cheerAboveEl = document.getElementById('cheerAbove');
 
 // 개별 이미지 로더
@@ -629,6 +630,12 @@ function showCheerAbove(text) {
     cheerAboveEl.classList.add('show');
     setTimeout(() => cheerAboveEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
 }
+function showCheerCenter(text) {
+    if (!cheerCenterEl) return;
+    cheerCenterEl.textContent = text;
+    cheerCenterEl.classList.add('show');
+    setTimeout(() => cheerCenterEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
+}
 
 // 메인 루프
 function frame(ts) {
@@ -733,11 +740,11 @@ function update(dt) {
             spawnSpark(c.x, c.y);
             uiBump(scoreEl); uiBump(document.querySelector('.battery'));
             updateHUD();
-            // 점수 마일스톤 응원(100/200/300)
+            // 점수 마일스톤 응원(100/200/300) - 중앙 표시, 입력 방해 없음
             const m = Math.floor(state.score / 100);
             if (m > state.milestone && m >= 1 && m <= 3) {
                 state.milestone = m;
-                showCheerAbove(pick(CHEERS));
+                showCheerCenter(pick(CHEERS));
             }
             if (state.coins % 10 === 0) showCheer();
         }
