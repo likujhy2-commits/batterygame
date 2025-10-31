@@ -290,6 +290,55 @@ function setupInputs() {
         btnJump.addEventListener('pointercancel', resetAllow);
         btnJump.addEventListener('pointerleave', resetAllow);
     }
+
+    // 화면 제스처: 하단 영역 홀드 이동(좌/우), 스와이프 업 점프
+    const activePointers = new Map();
+    const getZone = (x, y) => {
+        const rect = canvasWrap.getBoundingClientRect();
+        const rx = (x - rect.left) / rect.width;
+        const ry = (y - rect.top) / rect.height;
+        return { rx, ry };
+    };
+    const updateDirFrom = (rx, ry, phase) => {
+        // 하단 40% 영역에서만 방향 입력 활성화
+        if (ry >= 0.60) {
+            if (rx <= 0.35) { state.inputs.left = true; state.inputs.right = false; }
+            else if (rx >= 0.65) { state.inputs.right = true; state.inputs.left = false; }
+        } else if (phase === 'end') {
+            state.inputs.left = false; state.inputs.right = false;
+        }
+    };
+    const onPD = (ev) => {
+        if (startOverlay.hidden === false || gameOverOverlay.hidden === false) return;
+        const { rx, ry } = getZone(ev.clientX, ev.clientY);
+        activePointers.set(ev.pointerId, { sx: ev.clientX, sy: ev.clientY, t: performance.now(), usedDir: false });
+        updateDirFrom(rx, ry, 'start');
+    };
+    const onPM = (ev) => {
+        const data = activePointers.get(ev.pointerId); if (!data) return;
+        const { rx, ry } = getZone(ev.clientX, ev.clientY);
+        updateDirFrom(rx, ry, 'move');
+    };
+    const onPU = (ev) => {
+        const data = activePointers.get(ev.pointerId); if (data) {
+            const dx = ev.clientX - data.sx; const dy = ev.clientY - data.sy;
+            const dt = performance.now() - data.t;
+            // 스와이프 업 판정(짧은 시간 내 위로 40px 이상)
+            if (-dy > 40 && dt < 400) triggerJump();
+            else {
+                // 하단 중앙 탭 점프(0.35~0.65)
+                const { rx, ry } = getZone(ev.clientX, ev.clientY);
+                if (ry >= 0.60 && rx > 0.35 && rx < 0.65 && dt < 250 && Math.hypot(dx, dy) < 20) triggerJump();
+            }
+        }
+        activePointers.delete(ev.pointerId);
+        state.inputs.left = false; state.inputs.right = false;
+        state.allowJump = true;
+    };
+    canvasWrap.addEventListener('pointerdown', onPD);
+    window.addEventListener('pointermove', onPM);
+    window.addEventListener('pointerup', onPU);
+    window.addEventListener('pointercancel', onPU);
 }
 
 // 점프 트리거(단일 점프)
