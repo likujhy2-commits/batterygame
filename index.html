@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>드림런: 폭탄을 피해 꿈으로!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app" id="app">
+        <header class="topbar">
+            <div class="hud-left">
+                <div class="battery" aria-label="멘탈 게이지">
+                    <svg class="battery-icon" viewBox="0 0 54 24" aria-hidden="true">
+                        <rect x="1" y="1" width="48" height="22" rx="3" ry="3" class="battery-outline"/>
+                        <rect x="50" y="7" width="3" height="10" rx="1" class="battery-nub"/>
+                        <rect x="3" y="3" width="44" height="18" rx="2" class="battery-fill-bg"/>
+                        <rect x="3" y="3" width="0" height="18" rx="2" class="battery-fill" id="batteryFill"/>
+                    </svg>
+                    <span class="battery-text"><span id="mentalPercent">100</span>%</span>
+                </div>
+            </div>
+            <div class="hud-right">
+                <div class="score">점수: <span id="score">0</span></div>
+            </div>
+        </header>
+
+        <main class="stage" id="stage">
+            <div class="canvas-wrap danger-frame-off" id="canvasWrap">
+                <canvas id="gameCanvas" width="800" height="500"></canvas>
+                <div class="cheer" id="cheer" aria-live="polite"></div>
+            </div>
+        </main>
+
+        <footer class="bottombar">
+            <div class="controls-left">
+                <button id="startBtn" class="btn primary">시작</button>
+                <button id="restartBtn" class="btn" hidden>다시하기</button>
+            </div>
+            <div class="controls-center touch-controls" id="touchControls" hidden>
+                <button id="btnLeft" class="touch-btn">←</button>
+                <button id="btnJump" class="touch-btn">⤒</button>
+                <button id="btnRight" class="touch-btn">→</button>
+            </div>
+            <div class="controls-right">
+                <button id="muteBtn" class="btn icon" aria-pressed="false" aria-label="음소거">
+                    <span class="icon-sound" id="soundOn">🔊</span>
+                    <span class="icon-sound-off" id="soundOff" hidden>🔇</span>
+                </button>
+            </div>
+        </footer>
+
+        <div class="overlay" id="startOverlay" role="dialog" aria-modal="true">
+            <div class="panel">
+                <h2>드림런: 폭탄을 피해 꿈으로!</h2>
+                <ul class="desc">
+                    <li>← → 이동, Space 점프. P: 일시정지</li>
+                    <li>폭탄을 피하고 드림코인을 모으세요(+10점)</li>
+                    <li>회복 아이템으로 멘탈을 지키세요!</li>
+                </ul>
+                <button class="btn primary lg" id="startOverlayBtn">게임 시작</button>
+            </div>
+        </div>
+
+        <div class="overlay" id="pauseOverlay" hidden>
+            <div class="panel">
+                <h2>일시정지</h2>
+                <p>P를 다시 눌러 재개</p>
+                <button class="btn" id="resumeBtn">계속 달리기</button>
+            </div>
+        </div>
+
+        <div class="overlay" id="gameOverOverlay" hidden>
+            <div class="panel">
+                <h2>게임 오버</h2>
+                <div class="stats">
+                    <div>점수: <strong id="finalScore">0</strong> <span class="badge" id="newBest" hidden>NEW BEST!</span></div>
+                    <div>드림코인: <strong id="finalCoins">0</strong></div>
+                    <div>최장 생존 시간: <strong id="finalTime">0.0s</strong></div>
+                </div>
+                <p class="share-line" id="shareLine">오늘의 드림 포인트: 0 — 나 내일도 달린다!</p>
+                <div class="share">
+                    <button class="btn primary" id="shareBtn">SNS 공유</button>
+                    <button class="btn" id="playAgainBtn">다시하기</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+<noscript>이 게임을 실행하려면 JavaScript가 필요합니다.</noscript>
+</html>
+
+
+
