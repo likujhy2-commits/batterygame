@@ -478,14 +478,21 @@ function openStart() {
     startBtn.hidden = true;
     restartBtn.hidden = true;
     startOverlay.hidden = false;
-    // overlay anywhere 탭으로 시작 가능 (모바일 호환: click + pointerdown)
-    const startOnce = (e) => { e && e.preventDefault && e.preventDefault(); onStartOverlayTap(); };
+    // overlay anywhere 탭으로 시작 가능 (모바일 전 기기 호환)
+    const startOnce = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (e && e.stopPropagation) e.stopPropagation();
+        onStartOverlayTap();
+    };
+    const optsPassiveFalse = { once: true, passive: false };
+    startOverlay.addEventListener('pointerup', startOnce, optsPassiveFalse);
+    startOverlay.addEventListener('pointerdown', startOnce, optsPassiveFalse);
     startOverlay.addEventListener('click', startOnce, { once: true });
-    startOverlay.addEventListener('pointerdown', startOnce, { once: true, passive: false });
     const tapLabel = document.getElementById('tapToStart');
     if (tapLabel) {
+        tapLabel.addEventListener('pointerup', startOnce, optsPassiveFalse);
+        tapLabel.addEventListener('pointerdown', startOnce, optsPassiveFalse);
         tapLabel.addEventListener('click', startOnce, { once: true });
-        tapLabel.addEventListener('pointerdown', startOnce, { once: true, passive: false });
     }
 }
 function onStartOverlayTap() { startGame(); }
