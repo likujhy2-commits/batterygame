@@ -339,6 +339,20 @@ function setupInputs() {
     window.addEventListener('pointermove', onPM);
     window.addEventListener('pointerup', onPU);
     window.addEventListener('pointercancel', onPU);
+
+    // 모바일에서 길게 누를 때 메뉴/텍스트 선택 방지
+    if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
+        const block = (e) => e.preventDefault();
+        ['contextmenu', 'selectstart'].forEach(ev => {
+            document.addEventListener(ev, block, { passive: false });
+            canvasWrap.addEventListener(ev, block, { passive: false });
+        });
+        // iOS Safari 보완
+        try {
+            document.body.style.webkitTouchCallout = 'none';
+            document.body.style.webkitUserSelect = 'none';
+        } catch {}
+    }
 }
 
 // 점프 트리거(단일 점프)
