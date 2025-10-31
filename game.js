@@ -7,6 +7,7 @@ const CONFIG = {
         MODE: 'individual',
         WALK_RATE: 0.12,
         IDLE_RATE: 0.5,
+        VERSION: '2',
         FILES: {
             idle1: '배터리도트캐릭터_대기모습1.png',
             idle2: '배터리도트캐릭터_대기모습2.png',
@@ -101,14 +102,15 @@ let bgImage = null, bgReady = false;
     const files = CONFIG.SPRITE.FILES;
     const keys = Object.keys(images);
     let remain = keys.length + 1; // + background
+    const bust = (p) => p + (p.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(CONFIG.SPRITE.VERSION);
     keys.forEach((k) => {
         const img = new Image();
-        img.src = files[k];
+        img.src = bust(files[k]);
         img.onload = () => { images[k] = img; if (--remain === 0) { assetsReady = true; bgReady = true; } };
         img.onerror = () => { images[k] = img; if (--remain === 0) { assetsReady = true; bgReady = !!bgImage; } };
     });
     const bg = new Image();
-    bg.src = CONFIG.BACKGROUND.IMAGE;
+    bg.src = bust(CONFIG.BACKGROUND.IMAGE);
     bg.onload = () => { bgImage = bg; bgReady = true; if (--remain === 0) assetsReady = true; };
     bg.onerror = () => { bgImage = null; if (--remain === 0) assetsReady = true; };
 })();
