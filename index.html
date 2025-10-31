@@ -21,7 +21,7 @@
                 <div class="canvas-wrap danger-frame-off" id="canvasWrap">
                     <div class="canvas-hud">
                         <div class="hud-row">
-                            <div class="battery" aria-label="멘탈 게이지">
+                            <div class="battery hud-left" aria-label="멘탈 게이지">
                                 <svg class="battery-icon" viewBox="0 0 54 24" aria-hidden="true">
                                     <rect x="1" y="1" width="48" height="22" rx="3" ry="3" class="battery-outline"/>
                                     <rect x="50" y="7" width="3" height="10" rx="1" class="battery-nub"/>
@@ -31,8 +31,19 @@
                                 <span class="battery-text"><span id="mentalPercent">100</span>%</span>
                             </div>
                             <div class="score score-chip">⭐ 드림 포인트: <span id="score">0</span></div>
+                            <div class="top-actions">
+                                <button id="restartTopBtn" class="btn icon round" aria-label="다시하기" title="다시하기">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+                                        <path d="M12 5v-2l-4 4 4 4V9c2.757 0 5 2.243 5 5a5 5 0 1 1-5-5" fill="currentColor"></path>
+                                    </svg>
+                                </button>
+                                <button id="muteTopBtn" class="btn icon round" aria-pressed="false" aria-label="음소거" title="음소거">
+                                    <span class="icon-sound" id="soundOnTop">🔊</span>
+                                    <span class="icon-sound-off" id="soundOffTop" hidden>🔇</span>
+                                </button>
             </div>
         </div>
+    </div>
                     <canvas id="gameCanvas" width="800" height="500"></canvas>
                     <div class="cheer" id="cheer" aria-live="polite"></div>
             </div>

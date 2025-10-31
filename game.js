@@ -80,6 +80,10 @@ const restartBtn = document.getElementById('restartBtn');
 const muteBtn = document.getElementById('muteBtn');
 const soundOn = document.getElementById('soundOn');
 const soundOff = document.getElementById('soundOff');
+const muteTopBtn = document.getElementById('muteTopBtn');
+const soundOnTop = document.getElementById('soundOnTop');
+const soundOffTop = document.getElementById('soundOffTop');
+const restartTopBtn = document.getElementById('restartTopBtn');
 const startOverlay = document.getElementById('startOverlay');
 const startOverlayBtn = document.getElementById('startOverlayBtn');
 const pauseOverlay = document.getElementById('pauseOverlay');
@@ -436,7 +440,8 @@ function triggerJump() {
 
 // 게임 컨트롤 버튼
 startBtn.addEventListener('click', () => openStart());
-restartBtn.addEventListener('click', () => openStart());
+if (restartBtn) restartBtn.addEventListener('click', () => openStart());
+if (restartTopBtn) restartTopBtn.addEventListener('click', () => openStart());
 startOverlayBtn.addEventListener('click', () => startGame());
 resumeBtn.addEventListener('click', () => togglePause(false));
 playAgainBtn.addEventListener('click', () => { hideOverlays(); openStart(); });
@@ -455,11 +460,15 @@ shareBtn.addEventListener('click', async () => {
 function toggleMute() {
     audio.toggleMute();
     const pressed = audio.muted;
-    muteBtn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-    soundOn.hidden = pressed;
-    soundOff.hidden = !pressed;
+    if (muteBtn) muteBtn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    if (soundOn) soundOn.hidden = pressed;
+    if (soundOff) soundOff.hidden = !pressed;
+    if (muteTopBtn) muteTopBtn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    if (soundOnTop) soundOnTop.hidden = pressed;
+    if (soundOffTop) soundOffTop.hidden = !pressed;
 }
-muteBtn.addEventListener('click', toggleMute);
+if (muteBtn) muteBtn.addEventListener('click', toggleMute);
+if (muteTopBtn) muteTopBtn.addEventListener('click', toggleMute);
 
 function openStart() {
     resetGame();
