@@ -82,6 +82,10 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
     margin-right: auto;
     justify-self: center;
 }
+
+.canvas-hud { position: absolute; left: 10px; top: 10px; z-index: 6; }
+.canvas-hud .battery-text { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.canvas-hud .battery-outline, .canvas-hud .battery-nub { stroke: #e0f2ff; fill: #e0f2ff; opacity: .95; }
 .canvas-wrap.danger {
     animation: dangerPulse 0.5s steps(2, end) infinite;
 }
