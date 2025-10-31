@@ -83,15 +83,17 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
 }
 
 .canvas-hud { position: absolute; left: 0; right: 0; top: 6px; padding: 0 8px; z-index: 6; }
-.canvas-hud .hud-row { display: flex; align-items: center; gap: 8px; }
-.canvas-hud .hud-left { margin-right: auto; }
-.canvas-hud .score-chip { margin: 0 auto; }
+.canvas-hud .hud-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.canvas-hud .hud-left { margin-right: 0; }
+.canvas-hud .score-chip { margin: 0; }
 .canvas-hud .top-actions { display: flex; gap: 6px; margin-left: auto; }
 .canvas-hud .top-actions .btn { touch-action: manipulation; }
 .canvas-hud .battery-text { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 .canvas-hud .battery-outline, .canvas-hud .battery-nub { stroke: #e0f2ff; fill: #e0f2ff; opacity: .95; }
-.score-chip { background: rgba(0,0,0,0.35); color: #fff; padding: 4px 8px; border-radius: 10px; font-weight: 800; }
-.battery { background: rgba(0,0,0,0.30); padding: 2px 6px; border-radius: 10px; }
+.score-chip { background: rgba(0,0,0,0.28); color: #fff; padding: 2px 6px; border-radius: 8px; font-weight: 800; font-size: 14px; }
+.battery { background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 8px; }
+.battery-icon { width: 44px; height: 20px; display: block; }
+.battery-text { font-size: 12px; }
 .canvas-wrap.danger {
     animation: dangerPulse 0.5s steps(2, end) infinite;
 }
@@ -206,6 +208,8 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 @media (pointer: coarse) {
     #touchControls[hidden] { display: flex !important; }
     .touch-controls .touch-btn { width: 88px; height: 88px; font-size: 28px; margin: 0 8px; }
+    .score-chip { font-size: 13px; padding: 2px 6px; }
+    .battery-icon { width: 42px; height: 18px; }
 }
 
 /* Start overlay */

@@ -255,6 +255,7 @@ const state = {
 function resetGame() {
     state.running = false;
     state.paused = false;
+    state.phase = 'title';
     state.time = 0;
     state.lastTs = 0;
     state.accumulator = 0;
