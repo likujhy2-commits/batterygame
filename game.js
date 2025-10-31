@@ -446,7 +446,10 @@ function openStart() {
     startBtn.hidden = true;
     restartBtn.hidden = true;
     startOverlay.hidden = false;
+    // overlay anywhere 탭으로 시작 가능
+    startOverlay.addEventListener('click', onStartOverlayTap, { once: true });
 }
+function onStartOverlayTap() { startGame(); }
 function startGame() {
     startOverlay.hidden = true;
     gameOverOverlay.hidden = true;
@@ -457,8 +460,12 @@ function startGame() {
     state.lastTs = performance.now();
     // 배경음악 시작 (낮은 볼륨)
     audio.playBgm();
-    // 2초 튜토 팁
-    showToast('← → 이동, ⤒ 점프 (두 번 탭 이단점프)', 2000);
+    // 최초 1회 튜토 팁
+    const seen = localStorage.getItem('dreamrun_tip_seen');
+    if (!seen) {
+        showToast('← → 이동 | Space/⤒ 점프 (두 번 탭 이단점프)', 2000);
+        localStorage.setItem('dreamrun_tip_seen', '1');
+    }
     requestAnimationFrame(frame);
 }
 function togglePause(force) {
@@ -512,6 +519,11 @@ function spawnExplosion(x, y) {
             life: rand(0.3, 0.65), age: 0,
             color: i % 2 ? '#ffb2b5' : '#ff5861'
         });
+    }
+}
+function spawnSpark(x, y) {
+    for (let i = 0; i < 12; i++) {
+        state.particles.push({ x, y, vx: rand(-140, 140), vy: rand(-160, -20), life: rand(0.18, 0.35), age: 0, color: i % 2 ? '#ffe58a' : '#ffd24a' });
     }
 }
 
@@ -644,6 +656,8 @@ function update(dt) {
             state.score += CONFIG.COIN.SCORE;
             state.coins += 1;
             audio.beep('coin');
+            spawnSpark(c.x, c.y);
+            uiBump(scoreEl); uiBump(document.querySelector('.battery'));
             updateHUD();
             if (state.coins % 10 === 0) showCheer();
         }
@@ -725,6 +739,14 @@ function applyMentalDamage(amount, silent = false) {
         audio.beep('hit');
     }
     if (state.mental !== prev) updateHUD();
+}
+
+function uiBump(el) {
+    if (!el) return;
+    el.classList.remove('bump');
+    // Force reflow to restart animation
+    void el.offsetWidth;
+    el.classList.add('bump');
 }
 
 // 렌더링
@@ -886,7 +908,8 @@ function gameOver() {
     finalScoreEl.textContent = String(score);
     finalCoinsEl.textContent = String(coins);
     finalTimeEl.textContent = time.toFixed(1) + 's';
-    shareLineEl.textContent = `오늘의 드림 포인트: ${score} — 나 내일도 달린다!`;
+    const endMsg = pick(CHEERS);
+    shareLineEl.textContent = `오늘의 드림 포인트: ${score} — ${endMsg}`;
     let isBest = false;
     if (score > state.best) { state.best = score; localStorage.setItem('dreamrun_best_score', String(score)); isBest = true; }
     newBestEl.hidden = !isBest;
