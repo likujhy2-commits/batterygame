@@ -135,6 +135,23 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+// 레이아웃: 가용 영역에 맞춰 8:5 비율로 최대 확대
+function resizeLayout() {
+    const ratio = CONFIG.CANVAS.WIDTH / CONFIG.CANVAS.HEIGHT; // 1.6
+    const top = document.querySelector('.topbar');
+    const bottom = document.querySelector('.bottombar');
+    const pad = 20; // 여백
+    const availW = Math.max(320, window.innerWidth - pad * 2);
+    const availH = Math.max(200, window.innerHeight - (top?.offsetHeight || 0) - (bottom?.offsetHeight || 0) - pad * 2);
+    let w = availW;
+    let h = Math.round(w / ratio);
+    if (h > availH) { h = availH; w = Math.round(h * ratio); }
+    canvasWrap.style.width = w + 'px';
+    canvasWrap.style.height = h + 'px';
+}
+window.addEventListener('resize', resizeLayout);
+resizeLayout();
+
 // 오디오 매니저 (간단 WebAudio 톤)
 class AudioManager {
     constructor() {
@@ -389,8 +406,9 @@ function setupInputs() {
             if (inPanel) return; // 오버레이 버튼은 허용
             e.preventDefault();
         };
-        document.addEventListener('touchstart', touchBlock, { passive: false, capture: true });
-        document.addEventListener('touchend', touchBlock, { passive: false, capture: true });
+        // 캔버스 영역에서만 터치 기본 동작 차단 (버튼/푸터 영향 제거)
+        canvasWrap.addEventListener('touchstart', touchBlock, { passive: false, capture: true });
+        canvasWrap.addEventListener('touchend', touchBlock, { passive: false, capture: true });
         // iOS Safari 보완
         try {
             document.body.style.webkitTouchCallout = 'none';

@@ -47,6 +47,7 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
 }
 .hud-left { justify-self: start; }
 .hud-right { justify-self: end; }
+.bottombar { position: relative; z-index: 12; }
 
 .battery { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); }
 .battery-icon { width: 54px; height: 24px; display: block; }
