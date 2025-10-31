@@ -37,6 +37,8 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
     grid-template-rows: auto 1fr auto;
     gap: 12px;
     padding: 12px 12px 20px;
+    padding-left: calc(12px + env(safe-area-inset-left));
+    padding-right: calc(12px + env(safe-area-inset-right));
 }
 
 .topbar, .bottombar {
@@ -64,6 +66,7 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
 .stage {
     display: grid;
     place-items: center;
+    width: 100%;
 }
 .canvas-wrap {
     position: relative;
@@ -75,6 +78,9 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
     background: #0a0f1d;
     border: 2px solid rgba(124, 200, 255, 0.25);
     touch-action: none; /* 제스처 입력 우선, 스크롤/줌 제스처 방지 */
+    margin-left: auto;
+    margin-right: auto;
+    justify-self: center;
 }
 .canvas-wrap.danger {
     animation: dangerPulse 0.5s steps(2, end) infinite;
