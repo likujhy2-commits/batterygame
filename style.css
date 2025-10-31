@@ -87,6 +87,7 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
 .canvas-hud .hud-left { margin-right: auto; }
 .canvas-hud .score-chip { margin: 0 auto; }
 .canvas-hud .top-actions { display: flex; gap: 6px; margin-left: auto; }
+.canvas-hud .top-actions .btn { touch-action: manipulation; }
 .canvas-hud .battery-text { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 .canvas-hud .battery-outline, .canvas-hud .battery-nub { stroke: #e0f2ff; fill: #e0f2ff; opacity: .95; }
 .score-chip { background: rgba(0,0,0,0.35); color: #fff; padding: 4px 8px; border-radius: 10px; font-weight: 800; }

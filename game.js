@@ -396,6 +396,21 @@ function setupInputs() {
         addHandlers(btnLeft, 'left');
         addHandlers(btnRight, 'right');
         addHandlers(btnJump, 'jump');
+        // 근접 보정: 버튼 주변을 눌러도 해당 버튼으로 스냅
+        const snapTolerance = Math.max(32, CONFIG.INPUT.POINTER_TOLERANCE);
+        canvasWrap.addEventListener('pointerdown', (ev) => {
+            if (startOverlay.hidden === false || gameOverOverlay.hidden === false) return;
+            const x = ev.clientX, y = ev.clientY;
+            const inLeft = within(btnLeft, x, y, snapTolerance);
+            const inRight = within(btnRight, x, y, snapTolerance);
+            const inJump = within(btnJump, x, y, snapTolerance);
+            if (inLeft || inRight || inJump) {
+                ev.preventDefault();
+                if (inLeft) { state.inputs.left = state.inputs.leftPressed = true; setActive(btnLeft, true); ptrFor.left = ev.pointerId; }
+                if (inRight) { state.inputs.right = state.inputs.rightPressed = true; setActive(btnRight, true); ptrFor.right = ev.pointerId; }
+                if (inJump) { state.inputs.jump = state.inputs.jumpPressed = true; setActive(btnJump, true); ptrFor.jump = ev.pointerId; }
+            }
+        }, { passive: false });
     }
 
     // 이전 제스처 방식은 비활성화(원하면 CONFIG.INPUT.GESTURE_ENABLED로 토글)
@@ -412,8 +427,8 @@ function setupInputs() {
             canvasWrap.addEventListener(ev, block, { passive: false, capture: true });
         });
         const touchBlock = (e) => {
-            const inPanel = e.target && e.target.closest && e.target.closest('.panel');
-            if (inPanel) return; // 오버레이 버튼은 허용
+            const allow = e.target && e.target.closest && e.target.closest('.panel, .top-actions, .touch-controls, .btn, button');
+            if (allow) return; // 상단 아이콘/버튼/패널은 허용
             e.preventDefault();
         };
         // 캔버스 영역에서만 터치 기본 동작 차단 (버튼/푸터 영향 제거)
