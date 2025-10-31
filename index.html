@@ -34,7 +34,7 @@
                             <div class="top-actions">
                                 <button id="restartTopBtn" class="btn icon round" aria-label="다시하기" title="다시하기">
                                     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
-                                        <path d="M12 5v-2l-4 4 4 4V9c2.757 0 5 2.243 5 5a5 5 0 1 1-5-5" fill="currentColor"></path>
+                                        <path d="M12 4a8 8 0 1 0 7.75 10h-2.1A6 6 0 1 1 12 6v3l4-4-4-4v3z" fill="currentColor"></path>
                                     </svg>
                                 </button>
                                 <button id="muteTopBtn" class="btn icon round" aria-pressed="false" aria-label="음소거" title="음소거">
@@ -53,19 +53,13 @@
         <footer class="bottombar">
             <div class="controls-left">
                 <button id="startBtn" class="btn primary">시작</button>
-                <button id="restartBtn" class="btn" hidden>다시하기</button>
             </div>
             <div class="controls-center touch-controls" id="touchControls" hidden>
                 <button id="btnLeft" class="touch-btn">←</button>
                 <button id="btnJump" class="touch-btn">⤒</button>
                 <button id="btnRight" class="touch-btn">→</button>
             </div>
-            <div class="controls-right">
-                <button id="muteBtn" class="btn icon" aria-pressed="false" aria-label="음소거">
-                    <span class="icon-sound" id="soundOn">🔊</span>
-                    <span class="icon-sound-off" id="soundOff" hidden>🔇</span>
-                </button>
-            </div>
+            <div class="controls-right"></div>
         </footer>
 
         <div class="overlay" id="startOverlay" role="dialog" aria-modal="true">

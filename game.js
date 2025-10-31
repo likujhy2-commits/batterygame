@@ -336,6 +336,9 @@ function setupInputs() {
             canvasWrap.appendChild(debugEl);
         }
     }
+    // 첫 사용자 상호작용에서 오디오 컨텍스트 활성화(Safari)
+    const resumeAudio = () => { try { audio.ensure(); if (audio.ctx && audio.ctx.state !== 'running') audio.ctx.resume(); } catch {} };
+    ['pointerdown','touchstart','keydown','mousedown'].forEach(ev => document.addEventListener(ev, resumeAudio, { once: true, passive: true }));
     // 멀티터치 대응: 버튼별 포인터 추적
     const ptrFor = { left: null, right: null, jump: null };
     const setActive = (btn, on) => { if (!btn) return; btn.classList.toggle('active', !!on); };
@@ -488,6 +491,7 @@ function startGame() {
     restartBtn.hidden = false;
     state.lastTs = performance.now();
     // 배경음악 시작 (낮은 볼륨)
+    try { audio.ensure(); if (audio.ctx && audio.ctx.state !== 'running') audio.ctx.resume(); } catch {}
     audio.playBgm();
     // 최초 1회 튜토 팁
     const seen = localStorage.getItem('dreamrun_tip_seen');
