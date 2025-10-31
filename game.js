@@ -343,10 +343,18 @@ function setupInputs() {
     // 모바일에서 길게 누를 때 메뉴/텍스트 선택 방지
     if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) {
         const block = (e) => e.preventDefault();
+        // iOS Safari는 contextmenu 이벤트를 내지 않을 수 있어 selectstart 외에 touchstart/touchend도 제어
         ['contextmenu', 'selectstart'].forEach(ev => {
-            document.addEventListener(ev, block, { passive: false });
-            canvasWrap.addEventListener(ev, block, { passive: false });
+            document.addEventListener(ev, block, { passive: false, capture: true });
+            canvasWrap.addEventListener(ev, block, { passive: false, capture: true });
         });
+        const touchBlock = (e) => {
+            const inPanel = e.target && e.target.closest && e.target.closest('.panel');
+            if (inPanel) return; // 오버레이 버튼은 허용
+            e.preventDefault();
+        };
+        document.addEventListener('touchstart', touchBlock, { passive: false, capture: true });
+        document.addEventListener('touchend', touchBlock, { passive: false, capture: true });
         // iOS Safari 보완
         try {
             document.body.style.webkitTouchCallout = 'none';

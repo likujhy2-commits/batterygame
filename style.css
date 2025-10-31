@@ -24,6 +24,15 @@ body {
     -webkit-touch-callout: none; /* iOS 복사/공유 메뉴 방지 */
 }
 
+/* iOS Safari: 길게 눌러도 선택/호출 메뉴 방지(광범위 적용) */
+html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
 .app {
     min-height: 100dvh;
     display: grid;
