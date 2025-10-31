@@ -619,23 +619,9 @@ const CHEERS = [
     '네 페이스로 가면 돼.',
     '작은 한 걸음이 큰 변화를 만든다.'
 ];
-function showCheer() {
-    cheerEl.textContent = pick(CHEERS);
-    cheerEl.classList.add('show');
-    setTimeout(() => cheerEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
-}
-function showCheerAbove(text) {
-    if (!cheerAboveEl) return;
-    cheerAboveEl.textContent = text;
-    cheerAboveEl.classList.add('show');
-    setTimeout(() => cheerAboveEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
-}
-function showCheerCenter(text) {
-    if (!cheerCenterEl) return;
-    cheerCenterEl.textContent = text;
-    cheerCenterEl.classList.add('show');
-    setTimeout(() => cheerCenterEl.classList.remove('show'), CONFIG.UI.CHEER_MS);
-}
+function showCheer() { /* cheer popup disabled */ }
+function showCheerAbove(text) { /* disabled */ }
+function showCheerCenter(text) { /* disabled */ }
 
 // 메인 루프
 function frame(ts) {
@@ -740,13 +726,7 @@ function update(dt) {
             spawnSpark(c.x, c.y);
             uiBump(scoreEl); uiBump(document.querySelector('.battery'));
             updateHUD();
-            // 점수 마일스톤 응원(100/200/300) - 중앙 표시, 입력 방해 없음
-            const m = Math.floor(state.score / 100);
-            if (m > state.milestone && m >= 1 && m <= 3) {
-                state.milestone = m;
-                showCheerCenter(pick(CHEERS));
-            }
-            if (state.coins % 10 === 0) showCheer();
+            // 응원 팝업 비활성화
         }
     }
 
