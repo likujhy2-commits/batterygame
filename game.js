@@ -478,8 +478,15 @@ function openStart() {
     startBtn.hidden = true;
     restartBtn.hidden = true;
     startOverlay.hidden = false;
-    // overlay anywhere 탭으로 시작 가능
-    startOverlay.addEventListener('click', onStartOverlayTap, { once: true });
+    // overlay anywhere 탭으로 시작 가능 (모바일 호환: click + pointerdown)
+    const startOnce = (e) => { e && e.preventDefault && e.preventDefault(); onStartOverlayTap(); };
+    startOverlay.addEventListener('click', startOnce, { once: true });
+    startOverlay.addEventListener('pointerdown', startOnce, { once: true, passive: false });
+    const tapLabel = document.getElementById('tapToStart');
+    if (tapLabel) {
+        tapLabel.addEventListener('click', startOnce, { once: true });
+        tapLabel.addEventListener('pointerdown', startOnce, { once: true, passive: false });
+    }
 }
 function onStartOverlayTap() { startGame(); }
 function startGame() {
