@@ -225,6 +225,7 @@ const audio = new AudioManager();
 const state = {
     running: false,
     paused: false,
+    phase: 'title', // 'title' | 'playing' | 'gameover'
     time: 0,
     lastTs: 0,
     accumulator: 0,
@@ -476,8 +477,9 @@ if (muteTopBtn) muteTopBtn.addEventListener('click', toggleMute);
 function openStart() {
     resetGame();
     startBtn.hidden = true;
-    restartBtn.hidden = true;
+    if (restartBtn) restartBtn.hidden = true;
     startOverlay.hidden = false;
+    appEl.classList.add('overlay-open');
     // overlay anywhere 탭으로 시작 가능 (모바일 전 기기 호환)
     const startOnce = (e) => {
         if (e && e.preventDefault) e.preventDefault();
@@ -497,12 +499,15 @@ function openStart() {
 }
 function onStartOverlayTap() { startGame(); }
 function startGame() {
+    if (state.phase === 'playing') return;
     startOverlay.hidden = true;
     gameOverOverlay.hidden = true;
     state.running = true;
     state.paused = false;
+    state.phase = 'playing';
     startBtn.hidden = true;
-    restartBtn.hidden = false;
+    if (restartBtn) restartBtn.hidden = false;
+    appEl.classList.remove('overlay-open');
     state.lastTs = performance.now();
     // 배경음악 시작 (낮은 볼륨)
     try { audio.ensure(); if (audio.ctx && audio.ctx.state !== 'running') audio.ctx.resume(); } catch {}
@@ -956,6 +961,7 @@ function roundRect(ctx2d, x, y, w, h, r) {
 // 게임오버
 function gameOver() {
     state.running = false;
+    state.phase = 'gameover';
     const score = state.score;
     const coins = state.coins;
     const time = state.survival;
@@ -975,7 +981,7 @@ function gameOver() {
     // 짧은 딜레이 후 오버레이 표시
     setTimeout(() => { gameOverOverlay.hidden = false; }, 200);
     startBtn.hidden = true;
-    restartBtn.hidden = false;
+    if (restartBtn) restartBtn.hidden = false;
 }
 
 // 초기화
