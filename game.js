@@ -34,10 +34,8 @@ const CONFIG = {
     ITEMS: {
         SPAWN_BASE: 8.0, SPAWN_MIN: 4.5, SPAWN_RAMP: 0.008,
         TYPES: [
-            { key: 'intern', label: '일경험', heal: 25 },
-            { key: 'mentor', label: '현직자멘토링', heal: 25 },
-            { key: 'counsel', label: '취업상담', heal: 20 },
-            { key: 'growth', label: '청년성장프로그램', heal: 30 },
+            { key: 'intern', label: '일경험', heal: 25, image: '일경험포션.png' },
+            { key: 'growth', label: '청년성장프로그램', heal: 25, image: '청년성장프로그램포션.png' },
         ]
     },
     UI: {
@@ -120,6 +118,20 @@ let bgImage = null, bgReady = false;
     bg.src = bust(CONFIG.BACKGROUND.IMAGE);
     bg.onload = () => { bgImage = bg; bgReady = true; if (--remain === 0) assetsReady = true; };
     bg.onerror = () => { bgImage = null; if (--remain === 0) assetsReady = true; };
+})();
+
+// 아이템 이미지 로더
+const itemImages = {};
+(function preloadItemImages() {
+    const types = CONFIG.ITEMS.TYPES;
+    types.forEach((t) => {
+        if (!t.image) return;
+        const img = new Image();
+        const src = t.image + (t.image.includes('?') ? '&' : '?') + 'v=' + encodeURIComponent(CONFIG.SPRITE.VERSION);
+        img.src = src;
+        img.onload = () => { itemImages[t.key] = img; };
+        img.onerror = () => { itemImages[t.key] = null; };
+    });
 })();
 
 // 터치 컨트롤
@@ -575,7 +587,16 @@ function spawnCoin() {
 function spawnItem() {
     const t = pick(CONFIG.ITEMS.TYPES);
     const y = rand(160, CONFIG.WORLD.GROUND_Y - 70);
-    const item = { x: CONFIG.CANVAS.WIDTH + 12, y, w: 34, h: 22, vx: -CONFIG.BOMBS.BASE_SPEED * 0.9, type: t };
+    // 이미지 비율을 유지하며 더 크게 표시 (세로 88px)
+    let w = 66, h = 88;
+    const img = itemImages[t.key];
+    if (img && img.naturalWidth && img.naturalHeight) {
+        h = 88;
+        w = Math.round((img.naturalWidth * h) / img.naturalHeight);
+    }
+    // 가로를 살짝 확장 (원본 비율 대비 1.15배)
+    w = Math.round(w * 1.15);
+    const item = { x: CONFIG.CANVAS.WIDTH + 12, y, w, h, vx: -CONFIG.BOMBS.BASE_SPEED * 0.9, type: t };
     state.items.push(item);
 }
 
@@ -860,17 +881,20 @@ function render() {
         ctx.restore();
     }
 
-    // 아이템 (라벨 박스)
+    // 아이템 (이미지 렌더)
     for (const it of state.items) {
         ctx.save();
         ctx.translate(it.x, it.y);
-        roundRect(ctx, -it.w/2, -it.h/2, it.w, it.h, 6);
-        ctx.fillStyle = '#19375a'; ctx.fill();
-        ctx.strokeStyle = '#79b6ff'; ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = '#bfe1ff';
-        ctx.font = 'bold 12px ui-sans-serif';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(it.type.label, 0, 0);
+        const img = itemImages[it.type.key];
+        if (img) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(img, -it.w/2, -it.h/2, it.w, it.h);
+        } else {
+            // 폴백: 라벨 박스 렌더
+            roundRect(ctx, -it.w/2, -it.h/2, it.w, it.h, 6);
+            ctx.fillStyle = '#19375a'; ctx.fill();
+            ctx.strokeStyle = '#79b6ff'; ctx.lineWidth = 2; ctx.stroke();
+        }
         ctx.restore();
     }
 
@@ -960,6 +984,9 @@ function roundRect(ctx2d, x, y, w, h, r) {
     ctx2d.arcTo(x, y, x + w, y, rr);
     ctx2d.closePath();
 }
+
+// 텍스트를 너비에 맞춰 줄바꿈
+function wrapText(ctx2d, text, maxWidth) { /* 제거됨: 현재 미사용 */ return []; }
 
 // 게임오버
 function gameOver() {

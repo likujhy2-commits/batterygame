@@ -143,8 +143,15 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 .btn.secondary { background: #e2e8f0; color: #0f172a; border: none; }
 .btn.primary.lg { padding: 12px 16px; font-size: 1.05rem; }
 .btn.icon { font-size: 18px; line-height: 1; }
-.btn.icon.round { width: 36px; height: 36px; border-radius: 999px; display: inline-grid; place-items: center; background: rgba(255,255,255,0.85); color: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
-@media (pointer: coarse) { .btn.icon.round { width: 44px; height: 44px; } }
+.btn.icon.round { width: 56px; height: 56px; border-radius: 999px; display: inline-grid; place-items: center; background: rgba(255,255,255,0.9); color: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.18); }
+@media (pointer: coarse) { .btn.icon.round { width: 68px; height: 68px; } }
+
+/* 이미지 아이콘 크기/정렬 */
+.btn.icon.round .icon-img { width: 44px; height: 44px; display: block; object-fit: contain; image-rendering: auto; }
+.icon-sound, .icon-sound-off { display: grid; place-items: center; }
+@media (pointer: coarse) {
+    .btn.icon.round .icon-img { width: 56px; height: 56px; }
+}
 
 .touch-controls .touch-btn {
     background: rgba(255,255,255,0.8);
