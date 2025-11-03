@@ -2,7 +2,7 @@
 const CONFIG = {
     CANVAS: { WIDTH: 800, HEIGHT: 500 },
     WORLD: { GROUND_Y: 430, GRAVITY: 2100 }, // px/s^2
-    PLAYER: { SPEED: 300, JUMP_VELOCITY: 820, WIDTH: 44, HEIGHT: 54, MAX_JUMPS: 2 },
+    PLAYER: { SPEED: 300, JUMP_VELOCITY: 820, WIDTH: 48, HEIGHT: 58, MAX_JUMPS: 2 },
     SPRITE: {
         MODE: 'individual',
         WALK_RATE: 0.12,
@@ -254,6 +254,7 @@ const state = {
     coinsList: [],
     items: [],
     particles: [],
+    floatTexts: [],
     spawn: {
         bombGround: 0, bombAir: 0, coin: 0, item: 0,
         elapsed: 0
@@ -295,6 +296,7 @@ function resetGame() {
     state.coinsList = [];
     state.items = [];
     state.particles = [];
+    state.floatTexts = [];
     state.spawn = { bombGround: 0, bombAir: 0, coin: 0, item: 0, elapsed: 0 };
     state.nearDanger = false;
     state.survival = 0;
@@ -615,6 +617,22 @@ function spawnSpark(x, y) {
     }
 }
 
+// 캐릭터 옆 플로팅 텍스트 (도트풍)
+function spawnFloatText(text) {
+    const p = state.player;
+    const fx = p.x + CONFIG.PLAYER.WIDTH + 8;
+    const fy = p.y + Math.max(10, Math.round(CONFIG.PLAYER.HEIGHT * 0.35));
+    state.floatTexts.push({
+        x: fx,
+        y: fy,
+        vx: 0,
+        vy: -24, // 위로 천천히 부상
+        age: 0,
+        life: 0.9,
+        text
+    });
+}
+
 // 충돌
 function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
     return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
@@ -729,7 +747,10 @@ function update(dt) {
     state.coinsList.forEach(c => { c.x += c.vx * dt; });
     state.items.forEach(it => { it.x += it.vx * dt; });
     state.particles.forEach(pr => { pr.age += dt; pr.x += pr.vx * dt; pr.y += pr.vy * dt; pr.vy += 1200 * dt; });
+    // 플로팅 텍스트 업데이트
+    state.floatTexts.forEach(ft => { ft.age += dt; ft.x += ft.vx * dt; ft.y += ft.vy * dt; });
     state.particles = state.particles.filter(pr => pr.age < pr.life);
+    state.floatTexts = state.floatTexts.filter(ft => ft.age < ft.life);
     state.bombs = state.bombs.filter(b => b.x > -50);
     state.coinsList = state.coinsList.filter(c => c.x > -40);
     state.items = state.items.filter(i => i.x > -60);
@@ -758,7 +779,8 @@ function update(dt) {
             state.mental = clamp(state.mental + heal, 0, 100);
             updateHUD();
             audio.beep('item');
-            showToast(`멘탈 +${heal}: ${it.type.label}!`);
+            // 캐릭터 옆 도트풍 팝업(고정 텍스트)
+            spawnFloatText('멘탈회복 +25');
             p.healTimer = 0.5; // 회복 연출
         }
     }
@@ -915,6 +937,25 @@ function render() {
     for (const pr of state.particles) {
         ctx.fillStyle = pr.color;
         ctx.fillRect(pr.x, pr.y, 3, 3);
+    }
+
+    // 플로팅 텍스트 (도트풍)
+    for (const ft of state.floatTexts) {
+        const t = clamp(1 - (ft.age / ft.life), 0, 1);
+        ctx.save();
+        ctx.globalAlpha = Math.pow(t, 1.2);
+        ctx.imageSmoothingEnabled = false;
+        ctx.translate(Math.round(ft.x), Math.round(ft.y));
+        ctx.font = '800 12px ui-monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        // 외곽선(도트 느낌 강조)
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+        ctx.strokeText(ft.text, 0, 0);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(ft.text, 0, 0);
+        ctx.restore();
     }
 
     // 플레이어 (스프라이트 or 도트풍 대체)
