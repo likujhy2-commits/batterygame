@@ -2,7 +2,7 @@
 const CONFIG = {
     CANVAS: { WIDTH: 800, HEIGHT: 500 },
     WORLD: { GROUND_Y: 430, GRAVITY: 2100 }, // px/s^2
-    PLAYER: { SPEED: 300, JUMP_VELOCITY: 820, WIDTH: 36, HEIGHT: 44, MAX_JUMPS: 2 },
+    PLAYER: { SPEED: 300, JUMP_VELOCITY: 820, WIDTH: 44, HEIGHT: 54, MAX_JUMPS: 2 },
     SPRITE: {
         MODE: 'individual',
         WALK_RATE: 0.12,
