@@ -2,7 +2,7 @@
 const CONFIG = {
     CANVAS: { WIDTH: 800, HEIGHT: 500 },
     WORLD: { GROUND_Y: 430, GRAVITY: 2100 }, // px/s^2
-    PLAYER: { SPEED: 300, JUMP_VELOCITY: 820, WIDTH: 48, HEIGHT: 58, MAX_JUMPS: 2 },
+    PLAYER: { SPEED: 300, JUMP_VELOCITY: 820, WIDTH: 52, HEIGHT: 62, MAX_JUMPS: 2 },
     SPRITE: {
         MODE: 'individual',
         WALK_RATE: 0.12,
@@ -946,11 +946,11 @@ function render() {
         ctx.globalAlpha = Math.pow(t, 1.2);
         ctx.imageSmoothingEnabled = false;
         ctx.translate(Math.round(ft.x), Math.round(ft.y));
-        ctx.font = '800 12px ui-monospace';
+        ctx.font = '800 16px ui-monospace';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
         // 외곽선(도트 느낌 강조)
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 5;
         ctx.strokeStyle = 'rgba(0,0,0,0.75)';
         ctx.strokeText(ft.text, 0, 0);
         ctx.fillStyle = '#ffffff';
