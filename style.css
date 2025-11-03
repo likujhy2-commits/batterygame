@@ -83,14 +83,14 @@ html, body, .app, .topbar, .stage, .bottombar, button, .btn, .touch-btn {
 }
 
 .canvas-hud { position: absolute; left: 0; right: 0; top: 6px; padding: 0 8px; z-index: 100; -webkit-transform: translateZ(0); transform: translateZ(0); pointer-events: auto; }
-.canvas-hud .hud-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.canvas-hud .hud-row { display: flex; align-items: center; justify-content: space-between; gap: 4px; flex-wrap: nowrap; }
 .canvas-hud .hud-left { margin-right: 0; }
 .canvas-hud .score-chip { margin: 0; }
-.canvas-hud .top-actions { display: flex; gap: 6px; margin-left: auto; }
+.canvas-hud .top-actions { display: flex; gap: 4px; margin-left: auto; }
 .canvas-hud .top-actions .btn { touch-action: manipulation; }
 .canvas-hud .battery-text { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 .canvas-hud .battery-outline, .canvas-hud .battery-nub { stroke: #e0f2ff; fill: #e0f2ff; opacity: .95; }
-.score-chip { background: rgba(0,0,0,0.28); color: #fff; padding: 1px 4px; border-radius: 6px; font-weight: 800; font-size: 12px; }
+.score-chip { background: rgba(0,0,0,0.28); color: #fff; padding: 2px 6px; border-radius: 8px; font-weight: 800; font-size: 14px; white-space: nowrap; }
 .battery { background: rgba(0,0,0,0.25); padding: 2px 6px; border-radius: 8px; }
 .battery-icon { width: 44px; height: 20px; display: block; }
 .battery-text { font-size: 12px; }
@@ -143,11 +143,11 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 .btn.secondary { background: #e2e8f0; color: #0f172a; border: none; }
 .btn.primary.lg { padding: 12px 16px; font-size: 1.05rem; }
 .btn.icon { font-size: 18px; line-height: 1; }
-.btn.icon.round { width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; position: relative; background: rgba(255,255,255,0.92); color: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.18); }
-@media (pointer: coarse) { .btn.icon.round { width: 46px; height: 46px; } }
+.btn.icon.round { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; position: relative; background: rgba(255,255,255,0.92); color: #0f172a; box-shadow: 0 4px 10px rgba(0,0,0,0.18); }
+@media (pointer: coarse) { .btn.icon.round { width: 40px; height: 40px; } }
 
 /* 이미지 아이콘 크기/정렬 */
-.btn.icon.round .icon-img { width: 34px; height: 34px; display: block; object-fit: contain; image-rendering: auto; }
+.btn.icon.round .icon-img { width: 28px; height: 28px; display: block; object-fit: contain; image-rendering: auto; }
 /* 다시하기 아이콘 중앙 정렬 보정 */
 #restartTopBtn { position: relative; }
 #restartTopBtn .icon-img { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
@@ -157,7 +157,7 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 #muteTopBtn[aria-pressed="true"] .icon-sound { opacity: 0; }
 #muteTopBtn[aria-pressed="true"] .icon-sound-off { opacity: 1; }
 @media (pointer: coarse) {
-    .btn.icon.round .icon-img { width: 40px; height: 40px; }
+    .btn.icon.round .icon-img { width: 32px; height: 32px; }
 }
 
 .touch-controls .touch-btn {
@@ -224,7 +224,7 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 @media (pointer: coarse) {
     #touchControls[hidden] { display: flex !important; }
     .touch-controls .touch-btn { width: 88px; height: 88px; font-size: 28px; margin: 0 8px; }
-    .score-chip { font-size: 12px; padding: 1px 4px; }
+    .score-chip { font-size: 13px; padding: 2px 6px; white-space: nowrap; }
     .battery-icon { width: 42px; height: 18px; }
 }
 
