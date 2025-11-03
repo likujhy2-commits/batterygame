@@ -231,6 +231,7 @@ canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; 
 /* Start overlay */
 .start-panel { text-align: center; padding: 28px 24px; }
 .start-panel .title { font-size: 32px; margin: 0; color: var(--text); }
+.start-panel .title-img { display: block; margin: 0 auto 10px; width: min(420px, 72vw); height: auto; image-rendering: -webkit-optimize-contrast; }
 .start-panel .subtitle { margin: 6px 0 18px; color: var(--muted); }
 .start-panel .tap { font-weight: 800; color: var(--primary); margin: 10px 0 16px; }
 .blink { animation: blink 1.2s ease-in-out infinite; }
