@@ -497,8 +497,6 @@ function toggleMute() {
     if (soundOn) soundOn.hidden = pressed;
     if (soundOff) soundOff.hidden = !pressed;
     if (muteTopBtn) muteTopBtn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-    if (soundOnTop) soundOnTop.hidden = pressed;
-    if (soundOffTop) soundOffTop.hidden = !pressed;
 }
 if (muteBtn) muteBtn.addEventListener('click', toggleMute);
 if (muteTopBtn) muteTopBtn.addEventListener('click', toggleMute);
