@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>뉴게임 - 똥피하기</title>
+    <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+    <div class="app" id="app">
+        <main class="stage">
+            <div class="canvas-wrap" id="canvasWrap">
+                <div class="canvas-hud">
+                    <div class="score">점수: <span id="score">0</span></div>
+                    <button id="restartBtn" class="btn small" hidden>다시하기</button>
+                </div>
+                <canvas id="gameCanvas" width="360" height="600"></canvas>
+                <div class="touch-controls" id="touchControls">
+                    <button id="btnLeft" class="touch-btn">◀</button>
+                    <button id="btnRight" class="touch-btn">▶</button>
+                </div>
+            </div>
+        </main>
+
+        <div class="overlay" id="startOverlay" role="dialog" aria-modal="true">
+            <div class="panel">
+                <h1 class="title">똥피하기</h1>
+                <p class="subtitle">떨어지는 장애물을 피해 살아남자!</p>
+                <button class="btn primary" id="startBtn">시작</button>
+            </div>
+        </div>
+
+        <div class="overlay" id="gameOverOverlay" hidden>
+            <div class="panel">
+                <h2>게임 오버</h2>
+                <p>점수: <strong id="finalScore">0</strong></p>
+                <div class="actions">
+                    <button class="btn primary" id="playAgainBtn">다시하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js?v=1"></script>
+</body>
+</html>
+
+

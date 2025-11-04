@@ -85,7 +85,25 @@
                     <div>점수: <strong id="finalScore">0</strong> <span class="badge" id="newBest" hidden>NEW BEST!</span></div>
                     <div>드림코인: <strong id="finalCoins">0</strong></div>
                     <div>최장 생존 시간: <strong id="finalTime">0.0s</strong></div>
+					<div>현재 등수: <strong id="finalRank">-</strong> <span class="muted" id="finalRankMeta"></span></div>
                 </div>
+				<div class="leaders" id="postGameLeaders" hidden>
+					<h3 style="margin:10px 0 6px;">상위 10위</h3>
+					<ol id="postGameLeaderboard" style="padding-left:18px;margin:0;"></ol>
+				</div>
+				<div class="prize" id="prizeCodeWrap" hidden>
+					<div class="prize-line">당첨 코드: <code id="prizeCode">DRM-0000</code></div>
+					<div class="prize-actions">
+						<button class="btn secondary" id="copyCodeBtn">코드 복사</button>
+						<span class="hint">캡처 권장</span>
+					</div>
+				</div>
+				<div class="prize" id="playerCodeWrap" hidden>
+					<div class="prize-line">내 코드: <code id="playerCode">PLY-0000</code></div>
+					<div class="prize-actions">
+						<button class="btn secondary" id="copyPlayerCodeBtn">코드 복사</button>
+					</div>
+				</div>
                 <p class="share-line" id="shareLine">오늘의 드림 포인트: 0 — 나 내일도 달린다!</p>
                 <div class="share">
                     <button class="btn primary" id="playAgainBtn">다시하기</button>
@@ -97,7 +115,12 @@
         <div class="toast" id="toast" aria-live="polite"></div>
     </div>
 
-    <script src="game.js?v=20251103"></script>
+		<div class="panel leaderboard" id="leaderboardPanel" style="max-width:800px;margin:12px auto;">
+			<h3 style="margin:8px 0;">실시간 리더보드</h3>
+			<ol id="leaderboardList" style="padding-left:18px;margin:6px 0;"></ol>
+			<small style="opacity:.7;">코드는 일부만 마스킹되어 노출됩니다.</small>
+		</div>
+		<script src="game.js?v=20251103"></script>
 </body>
 <noscript>이 게임을 실행하려면 JavaScript가 필요합니다.</noscript>
 </html>
