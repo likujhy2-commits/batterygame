@@ -1,0 +1,12 @@
+node_modules/
+data.json
+data.sqlite
+*.db
+.env
+.DS_Store
+tmp_body.json
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+

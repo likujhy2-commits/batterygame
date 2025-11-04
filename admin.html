@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>드림런 관리</title>
+    <style>
+        body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans KR, Arial; margin: 16px; }
+        h1 { font-size: 20px; margin: 0 0 12px; }
+        h2 { font-size: 16px; margin: 18px 0 8px; }
+        .card { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
+        .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        label { font-size: 12px; color: #475569; display: block; margin-bottom: 4px; }
+        input, select { padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; min-width: 180px; }
+        button { padding: 8px 12px; border: 1px solid #3b82f6; background: #3b82f6; color: #fff; border-radius: 8px; cursor: pointer; }
+        button.secondary { background: #fff; color: #0f172a; border-color: #94a3b8; }
+        .muted { color: #64748b; font-size: 12px; }
+        .ok { color: #16a34a; }
+        .warn { color: #ea580c; }
+        .err { color: #dc2626; }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 14px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+        .spacer { height: 6px; }
+    </style>
+    <script>
+        function getToken() { return localStorage.getItem('admin_token') || ''; }
+        function setToken(v) { localStorage.setItem('admin_token', v || ''); }
+        function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+        function setHtml(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+
+        async function api(path, opts = {}) {
+            const token = getToken();
+            const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
+            if (token) headers['X-Admin-Token'] = token;
+            const res = await fetch(path, Object.assign({}, opts, { headers }));
+            const text = await res.text();
+            let data = null; try { data = text ? JSON.parse(text) : null; } catch {}
+            if (!res.ok) throw Object.assign(new Error('HTTP ' + res.status), { status: res.status, data });
+            return data;
+        }
+
+        function toIsoNow() { return new Date().toISOString(); }
+        function maskCode(code) {
+            if (!code) return '';
+            const parts = code.split('-'); if (parts.length !== 2) return code;
+            const s = parts[1]; if (s.length < 4) return parts[0] + '-' + s.replace(/.(?=..)/g, '*');
+            return parts[0] + '-' + '**' + s.slice(-2);
+        }
+
+        async function onSaveToken() {
+            const v = document.getElementById('tokenInput').value.trim();
+            setToken(v); setText('tokenStatus', v ? '토큰 저장됨' : '');
+        }
+
+        async function onVerify() {
+            const code = document.getElementById('codeInput').value.trim();
+            if (!code) { setHtml('verifyResult', '<span class="err">코드를 입력하세요</span>'); return; }
+            try {
+                const data = await api('/api/verify-code', { method: 'POST', body: JSON.stringify({ code }) });
+                const s = data.status;
+                let color = 'muted'; if (s === 'valid') color = 'ok'; else if (s === 'expired') color = 'warn'; else if (s === 'used') color = 'err';
+                setHtml('verifyResult', `<span class="${color}">상태: ${s}</span> — rank: ${data.rank ?? '-'} / player: ${data.player_id ?? '-'}`);
+            } catch (e) {
+                setHtml('verifyResult', `<span class="err">실패: ${e.status || ''}</span>`);
+            }
+        }
+
+        async function onUse() {
+            const code = document.getElementById('codeInput').value.trim();
+            const usedBy = document.getElementById('usedByInput').value.trim();
+            if (!code) { setHtml('verifyResult', '<span class="err">코드를 입력하세요</span>'); return; }
+            try {
+                const data = await api('/api/use-code', { method: 'POST', body: JSON.stringify({ code, used_by: usedBy || null }) });
+                setHtml('verifyResult', `<span class="ok">사용 처리 완료</span> — used_at: ${data.used_at}`);
+            } catch (e) {
+                const msg = (e?.data?.error) || '에러';
+                setHtml('verifyResult', `<span class="err">사용 실패: ${msg}</span>`);
+            }
+        }
+
+        async function onFinalize() {
+            const iso = document.getElementById('cutoffInput').value.trim();
+            const top = Number(document.getElementById('topInput').value || 10);
+            if (!iso) { setHtml('finalizeResult', '<span class="err">cutoff(ISO8601)을 입력</span>'); return; }
+            try {
+                const data = await api(`/api/finalize?cutoff=${encodeURIComponent(iso)}&top=${top}`, { method: 'POST' });
+                setHtml('finalizeResult', `<span class="ok">마감 완료</span> — winners: ${JSON.stringify(data.winners).replaceAll('<','&lt;')}`);
+            } catch (e) {
+                setHtml('finalizeResult', `<span class="err">마감 실패: ${(e?.data?.error)||''}</span>`);
+            }
+        }
+
+        async function onLoadWinners() {
+            const iso = document.getElementById('cutoffInput').value.trim();
+            if (!iso) { setHtml('winnersResult', '<span class="err">cutoff를 입력</span>'); return; }
+            try {
+                const data = await api(`/api/winners?cutoff=${encodeURIComponent(iso)}`);
+                const rows = Array.isArray(data.winners) ? data.winners : [];
+                const html = rows.map(w => `<tr><td>${w.rank}</td><td>${w.player_id}</td><td>${w.score}</td><td>${w.code||''}</td></tr>`).join('');
+                setHtml('winnersTbody', html || '<tr><td colspan="4" class="muted">결과 없음</td></tr>');
+                setHtml('winnersResult', `<span class="muted">총 ${rows.length}건</span>`);
+            } catch (e) {
+                setHtml('winnersResult', `<span class="err">조회 실패</span>`);
+            }
+        }
+
+        async function onIssueCode() {
+            const pid = document.getElementById('issuePlayerId').value.trim();
+            const rank = Number(document.getElementById('issueRank').value || 1);
+            if (!pid) { setHtml('issueResult', '<span class="err">player_id 입력</span>'); return; }
+            try {
+                const data = await api('/api/issue-code', { method: 'POST', body: JSON.stringify({ player_id: pid, rank }) });
+                setHtml('issueResult', `<span class="ok">발급: <code>${data.code}</code></span> (만료: ${data.expires_at})`);
+            } catch (e) {
+                const msg = (e?.data?.error) || '에러';
+                setHtml('issueResult', `<span class="err">발급 실패: ${msg}</span>`);
+            }
+        }
+
+        function onFillNow() { document.getElementById('cutoffInput').value = toIsoNow(); }
+        function onInit() {
+            document.getElementById('tokenInput').value = getToken();
+            onLoadWinners().catch(()=>{});
+        }
+        window.addEventListener('DOMContentLoaded', onInit);
+    </script>
+  </head>
+  <body>
+    <h1>드림런 관리</h1>
+
+    <div class="card">
+        <h2>관리 토큰</h2>
+        <div class="row">
+            <div>
+                <label for="tokenInput">X-Admin-Token</label>
+                <input id="tokenInput" type="password" placeholder="관리 토큰 입력" />
+            </div>
+            <button onclick="onSaveToken()">저장</button>
+            <span id="tokenStatus" class="muted"></span>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>코드 검증/사용</h2>
+            <div class="row">
+                <div>
+                    <label for="codeInput">수령 코드</label>
+                    <input id="codeInput" placeholder="DRM-XXXX" />
+                </div>
+                <div>
+                    <label for="usedByInput">사용 처리자(선택)</label>
+                    <input id="usedByInput" placeholder="booth-1" />
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <button class="secondary" onclick="onVerify()">검증</button>
+                <button onclick="onUse()">사용 처리</button>
+                <span id="verifyResult" class="muted"></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>마감 집계</h2>
+            <div class="row">
+                <div>
+                    <label for="cutoffInput">cutoff(ISO8601, UTC)</label>
+                    <input id="cutoffInput" placeholder="2025-11-05T08:00:00.000Z" />
+                </div>
+                <div>
+                    <label for="topInput">상위 N</label>
+                    <input id="topInput" type="number" value="10" min="1" max="100" />
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div class="row">
+                <button class="secondary" onclick="onFillNow()">지금 시각 넣기</button>
+                <button onclick="onFinalize()">마감 실행</button>
+                <button class="secondary" onclick="onLoadWinners()">우승자 조회</button>
+                <span id="finalizeResult" class="muted"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>해당 마감 배치 우승자</h2>
+        <div class="row"><span id="winnersResult" class="muted"></span></div>
+        <div class="spacer"></div>
+        <table>
+            <thead>
+                <tr><th>Rank</th><th>Player</th><th>Score</th><th>Code</th></tr>
+            </thead>
+            <tbody id="winnersTbody"><tr><td colspan="4" class="muted">조회 결과가 여기 표시됩니다</td></tr></tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>수동 발급(예외 처리용)</h2>
+        <div class="row">
+            <div>
+                <label for="issuePlayerId">player_id</label>
+                <input id="issuePlayerId" placeholder="P-..." />
+            </div>
+            <div>
+                <label for="issueRank">rank</label>
+                <select id="issueRank">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </div>
+            <button onclick="onIssueCode()">발급</button>
+            <span id="issueResult" class="muted"></span>
+        </div>
+        <p class="muted">동일 player_id 재발급 제한. 원칙상 마감 스냅샷 확정 대상만 발급하세요.</p>
+    </div>
+
+  </body>
+  </html>
+
+
